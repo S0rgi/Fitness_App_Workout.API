@@ -1,0 +1,59 @@
+# Build
+bin/
+obj/
+*.dll
+*.exe
+*.app
+*.so
+*.dylib
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ASP.NET Core secrets
+secrets.json
+
+# Visual Studio
+.vscode/
+.vs/
+*.csproj.user
+
+
+# dotnet artifacts
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Logs
+*.log
+logs/
+log/
+
+# Environment files
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Rider
+.idea/
+*.sln.iml
+
+# Test results
+TestResults/
+*.coverage
+*.coveragejson
+*.testresults
+
+# gRPC-generated files
+**/*.csproj.nuget.g.targets
+**/*.csproj.nuget.g.props
+**/*.grpc.cs
+**/*.pb.cs
