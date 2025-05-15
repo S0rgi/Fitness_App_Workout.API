@@ -56,5 +56,82 @@ public class WorkoutController : ControllerBase
 
         return Ok(new { workout.Id });
     }
+    [HttpGet]
+    public async Task<IActionResult> GetWorkoutList(){
+         var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized("Missing token");
+
+        UserResponse user;
+        try
+        {
+            user = await _authClient.ValidateTokenAsync(new TokenRequest { AccessToken = token });
+        }
+        catch (RpcException ex)
+        {
+            return Unauthorized("Invalid token: " + ex.Status.Detail);
+        }
+        return Ok(_dbContext.Workouts.Where(Workout => Workout.UserId ==Guid.Parse(user.Id ) ).ToList());
+    }
+    [HttpGet("{workoutId}")]
+    public async Task<IActionResult> GetWorkout(string workoutId)
+    {
+        var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized("Missing token");
+        UserResponse user;
+        try
+        {
+            user = await _authClient.ValidateTokenAsync(new TokenRequest { AccessToken = token });
+        }
+        catch (RpcException ex)
+        {
+            return Unauthorized("Invalid token: " + ex.Status.Detail);
+        }
+
+        if (!Guid.TryParse(workoutId, out var id))
+            return BadRequest("Invalid WorkoutId format");
+
+        var workout = await _dbContext.Workouts
+            .Include(w => w.Exercises)  // Загрузка связанных упражнений
+            .FirstOrDefaultAsync(w => w.Id == id);
+
+        if (workout == null)
+            return NotFound("Workout not found");
+
+        return Ok(workout);
+    }
+        [HttpDelete("{workoutId}")]
+    public async Task<IActionResult> DeleteWorkout(string workoutId)
+    {
+        var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized("Missing token");
+        UserResponse user;
+        try
+        {
+            user = await _authClient.ValidateTokenAsync(new TokenRequest { AccessToken = token });
+        }
+        catch (RpcException ex)
+        {
+            return Unauthorized("Invalid token: " + ex.Status.Detail);
+        }
+
+        if (!Guid.TryParse(workoutId, out var id))
+            return BadRequest("Invalid WorkoutId format");
+
+        var workout = await _dbContext.Workouts.FirstOrDefaultAsync(w => w.Id == id);
+        if (workout == null)
+        {
+            return NotFound("Workout not found");
+        }
+
+        _dbContext.Workouts.Remove(workout);
+        await _dbContext.SaveChangesAsync();
+        
+        return Ok();
+    }
 }
