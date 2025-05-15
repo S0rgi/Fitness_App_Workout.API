@@ -8,35 +8,21 @@ using Microsoft.EntityFrameworkCore;
 using Fitness_App_Workout.API.Dto;
 [ApiController]
 [Route("api/[controller]")]
+[GrpcAuthorize]
 public class WorkoutController : ControllerBase
 {
     private readonly WorkoutDbContext _dbContext;
-    private readonly UserService.UserServiceClient _authClient;
 
-    public WorkoutController(WorkoutDbContext dbContext, UserService.UserServiceClient authClient)
+    public WorkoutController(WorkoutDbContext dbContext)
     {
         _dbContext = dbContext;
-        _authClient = authClient;
     }
 
 
     [HttpPost]
     public async Task<IActionResult> CreateWorkout([FromBody] CreateWorkoutRequest request)
     {
-        var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
-        if (string.IsNullOrEmpty(token))
-            return Unauthorized("Missing token");
-
-        UserResponse user;
-        try
-        {
-            user = await _authClient.ValidateTokenAsync(new TokenRequest { AccessToken = token });
-        }
-        catch (RpcException ex)
-        {
-            return Unauthorized("Invalid token: " + ex.Status.Detail);
-        }
+        var user = HttpContext.Items["User"] as UserResponse;
 
         var workout = new Workout
         {
@@ -56,40 +42,22 @@ public class WorkoutController : ControllerBase
 
         return Ok(new { workout.Id });
     }
+
     [HttpGet]
-    public async Task<IActionResult> GetWorkoutList(){
-         var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+    public IActionResult GetWorkoutList()
+    {
+        var user = HttpContext.Items["User"] as UserResponse;
+        var workouts = _dbContext.Workouts
+            .Where(w => w.UserId == Guid.Parse(user.Id))
+            .ToList();
 
-        if (string.IsNullOrEmpty(token))
-            return Unauthorized("Missing token");
-
-        UserResponse user;
-        try
-        {
-            user = await _authClient.ValidateTokenAsync(new TokenRequest { AccessToken = token });
-        }
-        catch (RpcException ex)
-        {
-            return Unauthorized("Invalid token: " + ex.Status.Detail);
-        }
-        return Ok(_dbContext.Workouts.Where(Workout => Workout.UserId ==Guid.Parse(user.Id ) ).ToList());
+        return Ok(workouts);
     }
+
     [HttpGet("{workoutId}")]
     public async Task<IActionResult> GetWorkout(string workoutId)
     {
-        var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
-        if (string.IsNullOrEmpty(token))
-            return Unauthorized("Missing token");
-        UserResponse user;
-        try
-        {
-            user = await _authClient.ValidateTokenAsync(new TokenRequest { AccessToken = token });
-        }
-        catch (RpcException ex)
-        {
-            return Unauthorized("Invalid token: " + ex.Status.Detail);
-        }
+        var user = HttpContext.Items["User"] as UserResponse;
 
         if (!Guid.TryParse(workoutId, out var id))
             return BadRequest("Invalid WorkoutId format");
@@ -106,20 +74,7 @@ public class WorkoutController : ControllerBase
         [HttpDelete("{workoutId}")]
     public async Task<IActionResult> DeleteWorkout(string workoutId)
     {
-        var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
-        if (string.IsNullOrEmpty(token))
-            return Unauthorized("Missing token");
-        UserResponse user;
-        try
-        {
-            user = await _authClient.ValidateTokenAsync(new TokenRequest { AccessToken = token });
-        }
-        catch (RpcException ex)
-        {
-            return Unauthorized("Invalid token: " + ex.Status.Detail);
-        }
-
+        var user = HttpContext.Items["User"] as UserResponse;
         if (!Guid.TryParse(workoutId, out var id))
             return BadRequest("Invalid WorkoutId format");
 
