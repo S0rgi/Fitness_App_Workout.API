@@ -2,18 +2,18 @@ syntax = "proto3";
 
 option csharp_namespace = "Fitness_App_Workout.API.Grpc";
 
-package auth;
+package user;
 
-service AuthGrpc {
-  rpc ValidateToken (TokenRequest) returns (TokenResponse);
+service UserService {
+  rpc ValidateToken (TokenRequest) returns (UserResponse);
 }
 
 message TokenRequest {
   string accessToken = 1;
 }
 
-message TokenResponse {
-  string userId = 1;
+message UserResponse {
+  string id = 1;
   string email = 2;
   string username = 3;
 }

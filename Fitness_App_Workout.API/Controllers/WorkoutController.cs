@@ -11,13 +11,14 @@ using Fitness_App_Workout.API.Dto;
 public class WorkoutController : ControllerBase
 {
     private readonly WorkoutDbContext _dbContext;
-    private readonly AuthGrpc.AuthGrpcClient _authClient;
+    private readonly UserService.UserServiceClient _authClient;
 
-    public WorkoutController(WorkoutDbContext dbContext, AuthGrpc.AuthGrpcClient authClient)
+    public WorkoutController(WorkoutDbContext dbContext, UserService.UserServiceClient authClient)
     {
         _dbContext = dbContext;
         _authClient = authClient;
     }
+
 
     [HttpPost]
     public async Task<IActionResult> CreateWorkout([FromBody] CreateWorkoutRequest request)
@@ -27,7 +28,7 @@ public class WorkoutController : ControllerBase
         if (string.IsNullOrEmpty(token))
             return Unauthorized("Missing token");
 
-        TokenResponse user;
+        UserResponse user;
         try
         {
             user = await _authClient.ValidateTokenAsync(new TokenRequest { AccessToken = token });
@@ -39,7 +40,7 @@ public class WorkoutController : ControllerBase
 
         var workout = new Workout
         {
-            UserId = Guid.Parse(user.UserId),
+            UserId = Guid.Parse(user.Id),
             Title = request.Title,
             Date = DateTime.UtcNow,
             Exercises = request.Exercises.Select(e => new Exercise

@@ -6,6 +6,10 @@ using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Configuration;
 using DotNetEnv;
 using Fitness_App_Workout.API.Grpc;
+using System.Net.Security;
+using System.Net;
+using Grpc.Net.Client.Web;
+using System.Net.Http;
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load("../.env");
@@ -24,6 +28,7 @@ builder.Services.AddDbContext<WorkoutDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Workout API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -45,17 +50,20 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // gRPC-клиент для AuthService (адрес можно задать через ENV)
-var authGrpcAddress = Environment.GetEnvironmentVariable("AUTH_GRPC_ADDRESS")
-                    ?? "https://localhost:5001";
+var handler = new GrpcWebHandler(GrpcWebMode.GrpcWebText, new HttpClientHandler());
 
-builder.Services.AddSingleton(_ => new AuthGrpc.AuthGrpcClient(GrpcChannel.ForAddress(authGrpcAddress)));
+var channel = GrpcChannel.ForAddress(builder.Configuration.GetConnectionString("Grpc_Server"), new GrpcChannelOptions
+{
+    HttpHandler = handler
+});
 
+builder.Services.AddSingleton(_ => new UserService.UserServiceClient(channel));
 // Контроллеры / API
 builder.Services.AddControllers();
 // Поддержка кастомного порта (для Fly)
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    var port = Environment.GetEnvironmentVariable("PORT") ?? "8081";
+    var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
     serverOptions.ListenAnyIP(int.Parse(port));
 });
 // Запуск приложения
@@ -75,7 +83,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
