@@ -29,11 +29,13 @@ public class WorkoutController : ControllerBase
             UserId = Guid.Parse(user.Id),
             Title = request.Title,
             Date = DateTime.UtcNow,
-            Exercises = request.Exercises.Select(e => new Exercise
+            Exercises = request.Exercises.Select(e => new WorkoutExercise
             {
                 Name = e.Name,
                 Sets = e.Sets,
-                Reps = e.Repetitions
+                Reps = e.Reps,
+                Weight =e.Weight
+                
             }).ToList()
         };
 

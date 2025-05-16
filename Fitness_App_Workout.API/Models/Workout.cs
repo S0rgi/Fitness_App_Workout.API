@@ -6,6 +6,6 @@
         public Guid UserId { get; set; } // получаем через gRPC из токена
         public string Title { get; set; } // Например, "Грудь и спина"
         public DateTime Date { get; set; }
-        public ICollection<Exercise> Exercises { get; set; }
+        public ICollection<WorkoutExercise> Exercises { get; set; }
     }
 }

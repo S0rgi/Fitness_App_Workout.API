@@ -7,7 +7,9 @@ namespace Fitness_App_Workout.API.Data
     public class WorkoutDbContext : DbContext
     {
         public DbSet<Workout> Workouts { get; set; }
-        public DbSet<Exercise> Exercises { get; set; }
+        public DbSet<WorkoutExercise> WorkoutExercise { get; set; }
+        public DbSet<Challenge> Challenges { get; set; }
+        public DbSet<ChallengeExercise> ChallengeExercises { get; set; }
         public WorkoutDbContext(DbContextOptions<WorkoutDbContext> options)
             : base(options) { }
 
@@ -27,13 +29,34 @@ namespace Fitness_App_Workout.API.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            modelBuilder.Entity<Exercise>(entity =>
+            modelBuilder.Entity<WorkoutExercise>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Sets).IsRequired();
                 entity.Property(e => e.Reps).IsRequired();
                 entity.Property(e => e.Weight).IsRequired();
+            });
+            modelBuilder.Entity<Challenge>(entity =>
+            {
+                entity.HasKey(c => c.Id);
+
+                entity.Property(c => c.Message)
+                      .HasMaxLength(500);
+
+                entity.HasMany(c => c.Exercises)
+                      .WithOne() // Без навигационного свойства обратно к Challenge
+                      .HasForeignKey(e => e.ChallengeId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<ChallengeExercise>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Name)
+                      .IsRequired()
+                      .HasMaxLength(100);
             });
         }
     }

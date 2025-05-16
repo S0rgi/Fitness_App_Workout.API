@@ -1,6 +1,6 @@
 ﻿namespace Fitness_App_Workout.API.Models
 {
-    public class Exercise
+    public class WorkoutExercise
     {
         public Guid Id { get; set; }
         public Guid WorkoutId { get; set; }
