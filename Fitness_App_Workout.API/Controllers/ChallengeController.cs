@@ -3,30 +3,51 @@ using Fitness_App_Workout.API.Data;
 using Fitness_App_Workout.API.Models;
 using Fitness_App_Workout.API.Dto;
 using Microsoft.EntityFrameworkCore;
+using Fitness_App_Workout.API.Grpc;
+using System.Runtime.CompilerServices;
+using Grpc.Core;
 [ApiController]
 [Route("api/[controller]")]
 [GrpcAuthorize]
 public class ChallengesController : ControllerBase
 {
     private readonly WorkoutDbContext _context;
+    private readonly UserService.UserServiceClient _grpcCLient;
 
-    public ChallengesController(WorkoutDbContext context)
+    public ChallengesController(WorkoutDbContext context, UserService.UserServiceClient grpcCLient)
     {
         _context = context;
-    }
+        _grpcCLient = grpcCLient;
+    }   
 
     [HttpPost]
     public async Task<IActionResult> CreateChallenge([FromBody] CreateChallengeRequest request)
     {
-        if (request.InitiatorId == request.RecipientId)
+        
+        var user = HttpContext.Items["User"] as UserResponse;
+        if (user.Username == request.FriendName)
             return BadRequest("Инициатор и получатель не могут совпадать.");
-
+        var friendshipRequest = new FriendshipRequest
+        {
+            UserId = user.Id,
+            FriendName=request.FriendName
+        };
+        FriendshipResponse friendshipResponse;
+        try
+        {
+            friendshipResponse = await _grpcCLient.CheckFriendshipAsync(friendshipRequest);
+        }
+        catch (RpcException ex)
+        {
+            // Обработка ошибок gRPC вызова
+            return StatusCode(StatusCodes.Status500InternalServerError, $"Ошибка проверки дружбы: {ex.Status.Detail}");
+        }
         var challenge = new Challenge
         {
             Id = Guid.NewGuid(),
-            InitiatorId = request.InitiatorId,
-            RecipientId = request.RecipientId,
-            Duration = request.Duration,
+            InitiatorId = Guid.Parse(user.Id),
+            RecipientId = Guid.Parse(friendshipResponse.FriendId),
+            Duration = request.Duration,    
             Message = request.Message,
             CreatedAt = DateTime.UtcNow,
             Status = ChallengeStatus.Pending,
