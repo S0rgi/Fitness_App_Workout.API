@@ -18,19 +18,19 @@ public class ChallengesController : ControllerBase
     {
         _context = context;
         _grpcCLient = grpcCLient;
-    }   
+    }
 
     [HttpPost]
     public async Task<IActionResult> CreateChallenge([FromBody] CreateChallengeRequest request)
     {
-        
+
         var user = HttpContext.Items["User"] as UserResponse;
         if (user.Username == request.FriendName)
             return BadRequest("Инициатор и получатель не могут совпадать.");
         var friendshipRequest = new FriendshipRequest
         {
             UserId = user.Id,
-            FriendName=request.FriendName
+            FriendName = request.FriendName
         };
         FriendshipResponse friendshipResponse;
         try
@@ -47,7 +47,7 @@ public class ChallengesController : ControllerBase
             Id = Guid.NewGuid(),
             InitiatorId = Guid.Parse(user.Id),
             RecipientId = Guid.Parse(friendshipResponse.FriendId),
-            Duration = request.Duration,    
+            Duration = request.Duration,
             Message = request.Message,
             CreatedAt = DateTime.UtcNow,
             Status = ChallengeStatus.Pending,
@@ -76,6 +76,55 @@ public class ChallengesController : ControllerBase
 
         if (challenge == null)
             return NotFound();
+
+        return Ok(challenge);
+    }
+    [HttpGet("my")]
+    public async Task<IActionResult> GetMyChallenges()
+    {
+        var user = HttpContext.Items["User"] as UserResponse;
+        if (user == null)
+            return Unauthorized();
+
+        var userId =Guid.Parse( user.Id);
+
+        var challenges = await _context.Challenges
+            .Include(c => c.Exercises)
+            .Where(c => c.InitiatorId == userId || c.RecipientId == userId)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+
+        return Ok(challenges);
+    }
+    [HttpPost("{id}/respond")]
+    public async Task<IActionResult> RespondToChallenge(Guid id, [FromBody] ChallengeAnswerDto request)
+    {
+        var user = HttpContext.Items["User"] as UserResponse;
+        if (user == null)
+            return Unauthorized();
+
+        var challenge = await _context.Challenges.FindAsync(id);
+        if (challenge == null)
+            return NotFound();
+
+        if (challenge.RecipientId != Guid.Parse(user.Id))
+            return Forbid("You are not the recipient of this challenge.");
+
+        // Не даём повторно отвечать
+        if (challenge.Status != ChallengeStatus.Pending)
+            return BadRequest("Challenge is already answered.");
+
+        // Валидация допустимых статусов
+        var allowed = new[] { ChallengeStatus.Accepted, ChallengeStatus.Rejected, ChallengeStatus.Completed, ChallengeStatus.Failed };
+        if (!allowed.Contains(request.Status))
+            return BadRequest("Invalid challenge status response.");
+
+        challenge.Status = request.Status;
+
+        if (request.Status == ChallengeStatus.Completed)
+            challenge.CompletedAt = request.CompletedAt ?? DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
 
         return Ok(challenge);
     }
