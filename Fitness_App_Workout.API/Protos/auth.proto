@@ -5,6 +5,7 @@ option csharp_namespace = "Fitness_App_Workout.API.Grpc";
 package user;
 
 service UserService {
+  rpc GetUserById (UserRequest) returns (UserResponse);
   rpc ValidateToken (TokenRequest) returns (UserResponse);
   rpc CheckFriendship(FriendshipRequest) returns (FriendshipResponse);
 }
@@ -14,7 +15,12 @@ message FriendshipRequest{
 }
 message FriendshipResponse{
     string FriendId =1;
+    string Email = 2;
 }
+message UserRequest {
+  string id = 1;
+}
+
 message TokenRequest {
   string accessToken = 1;
 }

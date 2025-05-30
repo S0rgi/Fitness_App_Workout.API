@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Fitness_App_Workout.API.Data;
+using Fitness_App_Workout.API.Service;
 using Grpc.Net.Client;
-//using WorkoutService.Grpc;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Configuration;
 using DotNetEnv;
@@ -58,8 +58,15 @@ var channel = GrpcChannel.ForAddress(builder.Configuration.GetConnectionString("
 });
 
 builder.Services.AddSingleton(_ => new UserService.UserServiceClient(channel));
+builder.Services.AddSingleton<MessagePublisher>(sp =>
+{
+    var uri = builder.Configuration.GetConnectionString("RabbitMq");
+    return new MessagePublisher(uri);
+});
 // Контроллеры / API
+
 builder.Services.AddControllers();
+
 // Поддержка кастомного порта (для Fly)
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
