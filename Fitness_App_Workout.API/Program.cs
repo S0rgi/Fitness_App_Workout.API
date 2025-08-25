@@ -10,6 +10,7 @@ using System.Net.Security;
 using System.Net;
 using Grpc.Net.Client.Web;
 using System.Net.Http;
+using Fitness_App_Workout.API.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load("../.env");
@@ -23,7 +24,7 @@ var connectionString = builder.Configuration["ConnectionStrings:WorkoutDb"]
 // Регистрация DbContext
 builder.Services.AddDbContext<WorkoutDbContext>(options =>
     options.UseNpgsql(connectionString));
-
+builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -60,8 +61,10 @@ var channel = GrpcChannel.ForAddress(builder.Configuration.GetConnectionString("
 builder.Services.AddSingleton(_ => new UserService.UserServiceClient(channel));
 builder.Services.AddSingleton<MessagePublisher>(sp =>
 {
-    var uri = builder.Configuration.GetConnectionString("RabbitMq");
-    return new MessagePublisher(uri);
+    var uriRabbitmq = builder.Configuration.GetConnectionString("RabbitMq");
+    var pingUrl = builder.Configuration.GetConnectionString("PingNotifyUrl");
+                Console.WriteLine(pingUrl);
+    return new MessagePublisher(uriRabbitmq, pingUrl);
 });
 // Контроллеры / API
 
