@@ -8,7 +8,6 @@ using DotNetEnv;
 using Fitness_App_Workout.API.Grpc;
 using System.Net.Security;
 using System.Net;
-using Grpc.Net.Client.Web;
 using System.Net.Http;
 using Fitness_App_Workout.API.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
@@ -51,12 +50,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // gRPC-клиент для AuthService (адрес можно задать через ENV)
-var handler = new GrpcWebHandler(GrpcWebMode.GrpcWebText, new HttpClientHandler());
-
-var channel = GrpcChannel.ForAddress(builder.Configuration.GetConnectionString("Grpc_Server"), new GrpcChannelOptions
-{
-    HttpHandler = handler
-});
+var channel = GrpcChannel.ForAddress(builder.Configuration.GetConnectionString("Grpc_Server"));
 
 builder.Services.AddSingleton(_ => new UserService.UserServiceClient(channel));
 builder.Services.AddSingleton<MessagePublisher>(sp =>
