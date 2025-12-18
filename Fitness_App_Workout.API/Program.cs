@@ -45,7 +45,7 @@ builder.Services.AddSwaggerGen(c =>
                 Type = ReferenceType.SecurityScheme,
                 Id = "Bearer" }
             },
-            new string[] {}
+            new string[] {} 
         }
     });
 });
@@ -55,7 +55,8 @@ var handler = new GrpcWebHandler(GrpcWebMode.GrpcWebText, new HttpClientHandler(
 
 var channel = GrpcChannel.ForAddress(builder.Configuration.GetConnectionString("Grpc_Server"), new GrpcChannelOptions
 {
-    HttpHandler = handler
+    HttpHandler = handler,
+    UnsafeUseInsecureChannelCallCredentials = true
 });
 
 builder.Services.AddSingleton(_ => new UserService.UserServiceClient(channel));
