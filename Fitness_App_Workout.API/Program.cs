@@ -51,13 +51,16 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // gRPC-клиент для AuthService (адрес можно задать через ENV)
-var handler = new GrpcWebHandler(GrpcWebMode.GrpcWebText, new HttpClientHandler());
+var handler = new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler());
 
-var channel = GrpcChannel.ForAddress(builder.Configuration.GetConnectionString("Grpc_Server"), new GrpcChannelOptions
-{
-    HttpHandler = handler,
-    UnsafeUseInsecureChannelCallCredentials = true
-});
+var channel = GrpcChannel.ForAddress(
+    builder.Configuration.GetConnectionString("Grpc_Server"),
+    new GrpcChannelOptions
+    {
+        HttpHandler = handler,
+        HttpVersion = new Version(1, 1),
+        HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact
+    });
 
 builder.Services.AddSingleton(_ => new UserService.UserServiceClient(channel));
 builder.Services.AddSingleton<MessagePublisher>(sp =>
@@ -74,7 +77,7 @@ builder.Services.AddControllers();
 // Поддержка кастомного порта (для Fly)
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+    var port = Environment.GetEnvironmentVariable("PORT") ?? "8081";
     serverOptions.ListenAnyIP(int.Parse(port));
 });
 // Запуск приложения
