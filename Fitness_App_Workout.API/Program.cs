@@ -11,6 +11,11 @@ using System.Net;
 using Grpc.Net.Client.Web;
 using System.Net.Http;
 using Fitness_App_Workout.API.Interfaces;
+using Prometheus;
+using System.Diagnostics.Metrics;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using Prometheus.DotNetRuntime;
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load("../.env");
@@ -25,6 +30,14 @@ var connectionString = builder.Configuration["ConnectionStrings:WorkoutDb"]
 builder.Services.AddDbContext<WorkoutDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics =>
+    {
+        metrics.AddAspNetCoreInstrumentation();  // HTTP
+        metrics.AddRuntimeInstrumentation();     // GC, Threads, Exceptions
+        metrics.AddProcessInstrumentation();     // CPU, Memory, Handles
+        metrics.AddPrometheusExporter();
+    });
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -92,7 +105,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.MapPrometheusScrapingEndpoint();
 app.UseAuthorization();
 app.MapControllers();
 
