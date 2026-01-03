@@ -17,7 +17,11 @@ primary_region = 'fra'
   min_machines_running = 0
   processes = ["app"]
 
+[[metrics]]
+  port = 8080
+  path = "/metrics"
+
 [[vm]]
-  memory = "512mb"
+  memory = "256mb"
   cpu_kind = "shared"
   cpus = 1
