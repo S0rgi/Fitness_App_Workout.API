@@ -26,6 +26,16 @@ builder.Configuration.AddEnvironmentVariables();
 var connectionString = builder.Configuration["ConnectionStrings:WorkoutDb"]
                       ?? throw new InvalidOperationException("Connection string not found.");
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
 // Регистрация DbContext
 builder.Services.AddDbContext<WorkoutDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -105,6 +115,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseCors("AllowFrontend");
 app.MapPrometheusScrapingEndpoint();
 app.UseAuthorization();
 app.MapControllers();
