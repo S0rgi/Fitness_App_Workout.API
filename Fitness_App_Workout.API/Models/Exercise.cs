@@ -5,8 +5,17 @@
         public Guid Id { get; set; }
         public Guid WorkoutId { get; set; }
         public string Name { get; set; } // Например, "Жим лежа"
-        public int Sets { get; set; }
+        public List<WorkoutSet> Sets { get; set; } = new();
+    }
+
+    public class WorkoutSet
+    {
+        public Guid Id { get; set; }
+        public Guid WorkoutExerciseId { get; set; }
+
         public int Reps { get; set; }
-        public float Weight { get; set; } // кг
+        public float Weight { get; set; }
+
+        public WorkoutExercise WorkoutExercise { get; set; }
     }
 }

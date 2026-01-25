@@ -26,9 +26,11 @@ public class WorkoutService : IWorkoutService
             Exercises = request.Exercises.Select(e => new WorkoutExercise
             {
                 Name = e.Name,
-                Sets = e.Sets,
-                Reps = e.Reps,
-                Weight = e.Weight
+                Sets = e.Sets.Select(s => new WorkoutSet
+                {
+                    Reps = s.Reps,
+                    Weight = s.Weight
+                }).ToList()
 
             }).ToList()
         };

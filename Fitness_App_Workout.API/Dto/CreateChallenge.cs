@@ -5,5 +5,12 @@ public class CreateChallengeRequest
     public TimeSpan? Duration { get; set; } // или DateTime Deadline
     public string? Message { get; set; }
 
-    public List<CreateExerciseDto> Exercises { get; set; } = new();
+    public List<CreateChallengExerciseDto> Exercises { get; set; } = new();
+}
+public class CreateChallengExerciseDto
+{
+    public string Name { get; set; } = string.Empty;
+    public int Sets { get; set; }
+    public int Reps { get; set; }
+    public int Weight { get; set; }
 }

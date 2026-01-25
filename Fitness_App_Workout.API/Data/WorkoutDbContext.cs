@@ -33,9 +33,17 @@ namespace Fitness_App_Workout.API.Data
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.Sets).IsRequired();
-                entity.Property(e => e.Reps).IsRequired();
-                entity.Property(e => e.Weight).IsRequired();
+                entity.HasMany(e => e.Sets)
+                    .WithOne(s => s.WorkoutExercise)
+                    .HasForeignKey(s => s.WorkoutExerciseId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<WorkoutSet>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+                entity.Property(s => s.Reps).IsRequired();
+                entity.Property(s => s.Weight).IsRequired();
             });
             modelBuilder.Entity<Challenge>(entity =>
             {
