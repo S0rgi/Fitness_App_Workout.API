@@ -64,13 +64,29 @@ public class WorkoutService : IWorkoutService
             return new GetWorkoutResult(false,"Invalid WorkoutId format",null);
 
         var workout = await _dbContext.Workouts
+            .AsNoTracking()
             .Include(w => w.Exercises)
+                .ThenInclude(e => e.Sets)
             .FirstOrDefaultAsync(w => w.Id == id);
 
         if (workout == null)
-             return new GetWorkoutResult(false,"Workout not found",null);
+            return new GetWorkoutResult(false, "Workout not found", null);
 
-        return new GetWorkoutResult(true,null,workout);
+        var dto = new WorkoutDto
+        {
+            Id = workout.Id,
+            Exercises = workout.Exercises.Select(e => new WorkoutExerciseDto
+            {
+                Name = e.Name,
+                Sets = e.Sets.Select(s => new WorkoutSetDto
+                {
+                    Reps = s.Reps,
+                    Weight = s.Weight
+                }).ToList()
+            }).ToList()
+        };
+
+        return new GetWorkoutResult(true, null, dto);
     }
 
     public async Task< GetWorkoutListResult> GetWorkoutList(UserResponse user)

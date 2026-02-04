@@ -16,5 +16,5 @@ public interface IWorkoutService
 }
 public record CreateWorkoutResult(bool result, string ErrorMessage,Guid WorkoutId);
 public record GetWorkoutListResult(bool result, string ErrorMessage,List<Workout> workouts);
-public record GetWorkoutResult(bool result, string ErrorMessage, Workout workout);
+public record GetWorkoutResult(bool result, string ErrorMessage, WorkoutDto workout);
 public record DeleteWorkoutResult(bool result, string ErrorMessage);
