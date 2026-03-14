@@ -98,4 +98,29 @@ public class WorkoutController : ControllerBase
 
         return Problem(title: "Delete workout failed", detail: res.ErrorMessage, statusCode: StatusCodes.Status400BadRequest);
     }
+
+
+    [HttpGet("profile/{friendsname}")]
+    [ProducesResponseType(typeof(WorkoutProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetWorkoutProfile(string friendsname)
+    {
+        var user = HttpContext.Items["User"] as UserResponse;
+        var friendshipCheck = await _helper.CheckFriendshipAsync(user, friendsname);
+        if (!friendshipCheck.result)
+        {
+            return Problem(title: "Get workout profile failed", detail: friendshipCheck.ErrorMessage, statusCode: StatusCodes.Status400BadRequest);
+        }
+        var friend = new UserResponse
+        {
+            Id = friendshipCheck.friend.FriendId,
+            Email = friendshipCheck.friend.Email,
+            Username = friendsname
+        };
+        var res = await _workoutService.GetProfile(friend);
+                if (res.result)
+            return Ok(res.workoutProfile);
+
+         return Problem(title: "Get workout profile failed", detail: res.ErrorMessage, statusCode: StatusCodes.Status400BadRequest);
+    }
 }

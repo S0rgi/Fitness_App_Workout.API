@@ -58,6 +58,30 @@ public class WorkoutService : IWorkoutService
         return new DeleteWorkoutResult(true,null);;
     }
 
+    public async Task<WorkoutProfileResult> GetProfile(UserResponse user)
+    {
+        var userId = Guid.Parse(user.Id);
+
+        var query = _dbContext.Workouts
+            .Where(w => w.UserId == userId)
+            .AsQueryable();
+
+        var totalCount = await query.CountAsync();
+
+        var last30Days = DateTime.UtcNow.AddDays(-30);
+
+        var last30Count = await query
+            .Where(w => w.Date >= last30Days)
+            .CountAsync();
+        var res = new WorkoutProfileDto
+        {
+            WorkoutsTotal = totalCount,
+            WorkoutsLast30Days = last30Count
+        };
+        return new WorkoutProfileResult(true, null,res );
+    }
+
+
     public async Task<GetWorkoutResult> GetWorkout(string workoutId, UserResponse user)
     {
          if (!Guid.TryParse(workoutId, out var id))
