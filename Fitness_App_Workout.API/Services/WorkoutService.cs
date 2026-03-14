@@ -89,12 +89,25 @@ public class WorkoutService : IWorkoutService
         return new GetWorkoutResult(true, null, dto);
     }
 
-    public async Task< GetWorkoutListResult> GetWorkoutList(UserResponse user)
+    public async Task<GetWorkoutListResult> GetWorkoutList(UserResponse user, WorkoutFilter filter)
     {
-            var workouts = await _dbContext.Workouts
+        var query = _dbContext.Workouts
             .Where(w => w.UserId == Guid.Parse(user.Id))
-            .ToListAsync();
+            .AsQueryable();
 
-        return new GetWorkoutListResult(true,null,workouts);
+        if (filter.From.HasValue)
+            query = query.Where(w => w.Date >=  DateTime.SpecifyKind(filter.From.Value, DateTimeKind.Local).ToUniversalTime());
+
+        if (filter.To.HasValue)
+            query = query.Where(w => w.Date <=  DateTime.SpecifyKind(filter.To.Value, DateTimeKind.Local).ToUniversalTime());
+
+        query = query.OrderByDescending(w => w.Date);
+
+        if (filter.Last.HasValue)
+            query = query.Take(filter.Last.Value);
+
+        var workouts = await query.ToListAsync();
+
+        return new GetWorkoutListResult(true, null, workouts);
     }
 }

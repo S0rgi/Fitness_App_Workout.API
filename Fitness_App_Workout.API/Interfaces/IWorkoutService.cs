@@ -8,7 +8,7 @@ namespace Fitness_App_Workout.API.Interfaces;
 public interface IWorkoutService
 {
     public Task<CreateWorkoutResult> CreateWorkout(CreateWorkoutRequest request, UserResponse user);
-    public Task<GetWorkoutListResult> GetWorkoutList(UserResponse user);
+    public Task<GetWorkoutListResult> GetWorkoutList(UserResponse user,WorkoutFilter filter);
     public Task<GetWorkoutResult> GetWorkout(string workoutId,UserResponse user);
     public Task<DeleteWorkoutResult> DeleteWorkout(string workoutId,UserResponse user);
 

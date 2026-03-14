@@ -39,10 +39,10 @@ public class WorkoutController : ControllerBase
     [HttpGet("workouList")]
     [ProducesResponseType(typeof(List<Workout>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetWorkoutList()
+    public async Task<IActionResult> GetWorkoutList([FromQuery] WorkoutFilter filter)
     {
         var user = HttpContext.Items["User"] as UserResponse;
-        var res = await _workoutService.GetWorkoutList(user);
+        var res = await _workoutService.GetWorkoutList(user, filter);
                 if (res.result)
             return Ok(res.workouts);
 
@@ -52,7 +52,7 @@ public class WorkoutController : ControllerBase
     [HttpGet("workouList/{friendsname}")]
     [ProducesResponseType(typeof(List<Workout>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetWorkoutListFriends(string friendsname)
+    public async Task<IActionResult> GetWorkoutListFriends(string friendsname,[FromQuery] WorkoutFilter filter)
     {
         var user = HttpContext.Items["User"] as UserResponse;
         var friendshipCheck = await _helper.CheckFriendshipAsync(user, friendsname);
@@ -66,7 +66,7 @@ public class WorkoutController : ControllerBase
             Email = friendshipCheck.friend.Email,
             Username = friendsname
         };
-        var res = await _workoutService.GetWorkoutList(friend);
+        var res = await _workoutService.GetWorkoutList(friend, filter);
                 if (res.result)
             return Ok(res.workouts);
 
