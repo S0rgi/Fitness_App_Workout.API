@@ -6,16 +6,19 @@ using Microsoft.EntityFrameworkCore;
 using Fitness_App_Workout.API.Dto;
 using Fitness_App_Workout.API.Interfaces;
 using System.Threading.Tasks;
+using Fitness_App_Workout.Service;
 [ApiController]
 [Route("api/[controller]")]
 [GrpcAuthorize]
 public class WorkoutController : ControllerBase
 {
     private readonly IWorkoutService _workoutService;
+    private readonly Helper _helper;
 
-    public WorkoutController(IWorkoutService workoutService)
+    public WorkoutController(IWorkoutService workoutService, Helper helper)
     {
         _workoutService = workoutService;
+        _helper = helper;
     }
 
 
@@ -40,6 +43,31 @@ public class WorkoutController : ControllerBase
     {
         var user = HttpContext.Items["User"] as UserResponse;
         var res = await _workoutService.GetWorkoutList(user);
+                if (res.result)
+            return Ok(res.workouts);
+
+         return Problem(title: "Get workouts list failed", detail: res.ErrorMessage, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    [HttpGet("workouList/{friendsname}")]
+    [ProducesResponseType(typeof(List<Workout>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetWorkoutListFriends(string friendsname)
+    {
+        var user = HttpContext.Items["User"] as UserResponse;
+        var friendshipCheck = await _helper.CheckFriendshipAsync(user, friendsname);
+        if (!friendshipCheck.result)
+        {
+                     return Problem(title: "Get workouts list failed", detail: friendshipCheck.ErrorMessage, statusCode: StatusCodes.Status400BadRequest);
+
+        }
+        var friend = new UserResponse
+        {
+            Id = friendshipCheck.friend.FriendId,
+            Email = friendshipCheck.friend.Email,
+            Username = friendsname
+        };
+        var res = await _workoutService.GetWorkoutList(friend);
                 if (res.result)
             return Ok(res.workouts);
 

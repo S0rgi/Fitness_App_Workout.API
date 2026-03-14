@@ -16,6 +16,7 @@ using System.Diagnostics.Metrics;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using Prometheus.DotNetRuntime;
+using Fitness_App_Workout.Service;
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load("../.env");
@@ -40,6 +41,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<WorkoutDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+builder.Services.AddScoped<Helper>();
 builder.Services.AddOpenTelemetry()
     .WithMetrics(metrics =>
     {
