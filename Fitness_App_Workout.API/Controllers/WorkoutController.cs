@@ -58,8 +58,7 @@ public class WorkoutController : ControllerBase
         var friendshipCheck = await _helper.CheckFriendshipAsync(user, friendsname);
         if (!friendshipCheck.result)
         {
-                     return Problem(title: "Get workouts list failed", detail: friendshipCheck.ErrorMessage, statusCode: StatusCodes.Status400BadRequest);
-
+            return Problem(title: "Get workouts list failed", detail: friendshipCheck.ErrorMessage, statusCode: StatusCodes.Status400BadRequest);
         }
         var friend = new UserResponse
         {
