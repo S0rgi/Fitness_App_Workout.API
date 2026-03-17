@@ -106,7 +106,8 @@ public class WorkoutService : IWorkoutService
                 Sets = e.Sets.Select(s => new WorkoutSetDto
                 {
                     Reps = s.Reps,
-                    Weight = s.Weight
+                    Weight = s.Weight,
+                    IsOwnWeight = s.IsOwnWeight
                 }).ToList()
             }).ToList()
         };
