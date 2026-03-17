@@ -16,6 +16,8 @@
         public int Reps { get; set; }
         public float Weight { get; set; }
 
+        public bool IsOwnWeight { get; set; }
+
         public WorkoutExercise WorkoutExercise { get; set; }
     }
 }
