@@ -1,5 +1,6 @@
 public class WorkoutDto
 {
+    public DateTime? Date { get; set; }
     public Guid Id { get; set; }
     public List<WorkoutExerciseDto> Exercises { get; set; }
 }
