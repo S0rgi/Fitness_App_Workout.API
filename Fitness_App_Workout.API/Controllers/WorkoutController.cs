@@ -7,6 +7,7 @@ using Fitness_App_Workout.API.Dto;
 using Fitness_App_Workout.API.Interfaces;
 using System.Threading.Tasks;
 using Fitness_App_Workout.Service;
+using Microsoft.AspNetCore.Authorization;
 [ApiController]
 [Route("api/[controller]")]
 [GrpcAuthorize]
@@ -122,5 +123,24 @@ public class WorkoutController : ControllerBase
             return Ok(res.workoutProfile);
 
          return Problem(title: "Get workout profile failed", detail: res.ErrorMessage, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("my_last_train")]
+    [ProducesResponseType(typeof(WorkoutProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetMyLastTrain([FromQuery] WorkoutFilter filter)
+    {
+        var me = new UserResponse
+        {
+            Id = "0198c71a-e9ff-7dd7-8770-a8c4c6e3c02c",
+            Email = "",
+            Username = ""
+        };
+        var res = await _workoutService.GetWorkoutList(me,filter);
+                if (res.result)
+            return Ok(res.workouts);
+
+         return Problem(title: "Get my last workout failed", detail: res.ErrorMessage, statusCode: StatusCodes.Status400BadRequest);
     }
 }

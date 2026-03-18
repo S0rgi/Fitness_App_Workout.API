@@ -99,6 +99,7 @@ public class WorkoutService : IWorkoutService
 
         var dto = new WorkoutDto
         {
+            Date = workout.Date,
             Id = workout.Id,
             Exercises = workout.Exercises.Select(e => new WorkoutExerciseDto
             {
