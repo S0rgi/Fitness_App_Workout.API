@@ -2,6 +2,7 @@ namespace Fitness_App_Workout.API.Dto;
 
 public class CreateWorkoutRequest
 {
+    public DateTime? dateTime { get; set; }
     public string Title { get; set; } = string.Empty;
     public List<CreateExerciseDto> Exercises { get; set; } = new();
 }

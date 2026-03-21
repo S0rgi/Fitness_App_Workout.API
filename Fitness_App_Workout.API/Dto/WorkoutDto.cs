@@ -1,4 +1,4 @@
-public class WorkoutDto
+public class CreateWorkoutDto
 {
     public DateTime? Date { get; set; }
     public Guid Id { get; set; }

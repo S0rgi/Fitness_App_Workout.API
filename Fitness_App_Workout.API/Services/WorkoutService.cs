@@ -22,7 +22,7 @@ public class WorkoutService : IWorkoutService
         {
             UserId = Guid.Parse(user.Id),
             Title = request.Title,
-            Date = DateTime.UtcNow,
+            Date = request.dateTime?? DateTime.UtcNow,
             Exercises = request.Exercises.Select(e => new WorkoutExercise
             {
                 Name = e.Name,
@@ -97,7 +97,7 @@ public class WorkoutService : IWorkoutService
         if (workout == null)
             return new GetWorkoutResult(false, "Workout not found", null);
 
-        var dto = new WorkoutDto
+        var dto = new CreateWorkoutDto
         {
             Date = workout.Date,
             Id = workout.Id,
